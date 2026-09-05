@@ -1,0 +1,33 @@
+package command
+
+import (
+	"rodis/pkg/resp"
+	"strconv"
+	"time"
+)
+
+type ExpireCommand struct{}
+
+func (c *ExpireCommand) Execute(args []resp.Payload, ctx *CommandContext) resp.Payload {
+	if len(args) != 2 {
+		return resp.NewError("ERR wrong number of arguments for 'expire' command")
+	}
+
+	if ctx == nil || ctx.k == nil {
+		return resp.NewError("ERR internal server error")
+	}
+
+	var result int
+	key := args[0].Bulk
+	i64, err := strconv.ParseInt((args[1].Bulk), 10, 64)
+	if err != nil {
+		return resp.NewError("ERR value is not an integer or out of range")
+	}
+	t := time.Now().Add(time.Duration(i64) * time.Second)
+
+	if ctx.k.SetExpireTime(key, t) {
+		result++
+	}
+
+	return resp.NewInteger(result)
+}

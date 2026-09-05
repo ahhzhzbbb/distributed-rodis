@@ -1,0 +1,20 @@
+package command
+
+import "rodis/pkg/resp"
+
+type PingCommand struct{}
+
+func (c *PingCommand) Execute(args []resp.Payload, ctx *CommandContext) resp.Payload {
+	if len(args) > 1 {
+		return resp.NewError("ERR wrong number of arguments for 'ping' command")
+	}
+	if len(args) == 1 {
+		return args[0]
+	}
+
+	if ctx == nil || ctx.k == nil {
+		return resp.NewError("ERR internal server error")
+	}
+
+	return resp.NewString("PONG")
+}

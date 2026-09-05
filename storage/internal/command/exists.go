@@ -1,0 +1,24 @@
+package command
+
+import "rodis/pkg/resp"
+
+type ExistsCommand struct{}
+
+func (c *ExistsCommand) Execute(args []resp.Payload, ctx *CommandContext) resp.Payload {
+	if len(args) == 0 {
+		return resp.NewError("ERR wrong number of arguments for 'exists' command")
+	}
+
+	if ctx == nil || ctx.k == nil {
+		return resp.NewError("ERR internal server error")
+	}
+
+	count := 0
+
+	for _, arg := range args {
+		if ctx.k.CheckExistsKey(arg.Bulk) {
+			count++
+		}
+	}
+	return resp.NewInteger(count)
+}
